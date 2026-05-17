@@ -64,7 +64,12 @@ export const LoginPage = () => {
   };
 
   return (
-    <div>
+  <div className="flex min-h-screen items-center justify-center bg-gray-100">
+    <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow">
+      <h1 className="mb-4 text-2xl font-bold">
+        Login
+      </h1>
+
       <input
         value={username}
         onChange={(e) =>
@@ -73,6 +78,7 @@ export const LoginPage = () => {
           )
         }
         placeholder="username"
+        className="mb-3 w-full rounded border p-2"
       />
 
       <input
@@ -84,6 +90,7 @@ export const LoginPage = () => {
           )
         }
         placeholder="password"
+        className="mb-4 w-full rounded border p-2"
       />
 
       <button
@@ -92,13 +99,17 @@ export const LoginPage = () => {
         disabled={
           loginMutation.isPending
         }
+        className="w-full rounded bg-black p-2 text-white"
       >
         Login
       </button>
 
       {loginMutation.isError && (
-        <p>Login error</p>
+        <p className="mt-3 text-red-500">
+          Login error
+        </p>
       )}
     </div>
-  );
-};
+  </div>
+);
+}
