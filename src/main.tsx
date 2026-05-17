@@ -1,13 +1,22 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import { setupInterceptors } from './shared/api/setup-interceptors.ts'
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-setupInterceptors()
+import {
+  RouterProvider,
+} from "react-router-dom";
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+import { router } from "./app/router/router";
+
+import { QueryProvider } from "./app/providers/query-provider";
+
+import { setupInterceptors } from "./shared/api/setup-interceptors";
+
+setupInterceptors();
+
+ReactDOM.createRoot(
+  document.getElementById("root")!,
+).render(
+  <QueryProvider>
+    <RouterProvider router={router} />
+  </QueryProvider>,
+);
