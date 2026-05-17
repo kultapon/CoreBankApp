@@ -4,12 +4,22 @@ import { useNavigate } from "react-router-dom";
 
 import { useLogin } from "../features/auth/hooks/use-login";
 
+import {
+  getMeRequest,
+} from "../features/auth/api/auth.api";
+
 import { tokenStorage } from "../features/auth/token.storage";
+
+import { useAuthStore } from "../features/auth/store/auth.store";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
 
   const loginMutation = useLogin();
+
+  const setUser = useAuthStore(
+    (state) => state.setUser,
+  );
 
   const [username, setUsername] =
     useState("");
@@ -25,16 +35,25 @@ export const LoginPage = () => {
       },
 
       {
-        onSuccess: (data) => {
-          tokenStorage.setAccessToken(
-            data.access_token,
-          );
+        onSuccess: async (data) => {
+          try {
+            tokenStorage.setAccessToken(
+              data.access_token,
+            );
 
-          tokenStorage.setRefreshToken(
-            data.refresh_token,
-          );
+            tokenStorage.setRefreshToken(
+              data.refresh_token,
+            );
 
-          navigate("/");
+            const user =
+              await getMeRequest();
+
+            setUser(user);
+
+            navigate("/");
+          } catch (error) {
+            console.error(error);
+          }
         },
 
         onError: (error) => {
@@ -49,7 +68,9 @@ export const LoginPage = () => {
       <input
         value={username}
         onChange={(e) =>
-          setUsername(e.target.value)
+          setUsername(
+            e.target.value,
+          )
         }
         placeholder="username"
       />
@@ -58,14 +79,19 @@ export const LoginPage = () => {
         type="password"
         value={password}
         onChange={(e) =>
-          setPassword(e.target.value)
+          setPassword(
+            e.target.value,
+          )
         }
         placeholder="password"
       />
 
       <button
+        type="button"
         onClick={handleLogin}
-        disabled={loginMutation.isPending}
+        disabled={
+          loginMutation.isPending
+        }
       >
         Login
       </button>

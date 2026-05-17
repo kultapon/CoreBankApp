@@ -1,3 +1,5 @@
+import { AxiosError } from "axios";
+
 import { apiClient } from "./client";
 
 import { refreshRequest } from "../../features/auth/api/auth.api";
@@ -27,27 +29,58 @@ const processQueue = (
 };
 
 export const setupInterceptors = () => {
+  apiClient.interceptors.request.use(
+    (config) => {
+      const accessToken =
+        tokenStorage.getAccessToken();
+
+      if (accessToken) {
+        config.headers.Authorization =
+          `Bearer ${accessToken}`;
+      }
+
+      return config;
+    },
+  );
+
   apiClient.interceptors.response.use(
     (response) => response,
 
-    async (error) => {
-      const originalRequest = error.config;
+    async (error: AxiosError) => {
+      const originalRequest =
+        error.config as typeof error.config & {
+          _retry?: boolean;
+        };
 
       if (
         error.response?.status === 401 &&
+        originalRequest &&
         !originalRequest._retry
       ) {
         if (isRefreshing) {
-          return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject });
-          })
+          return new Promise<string>(
+            (resolve, reject) => {
+              failedQueue.push({
+                resolve,
+                reject,
+              });
+            },
+          )
             .then((token) => {
-              originalRequest.headers.Authorization =
-                `Bearer ${token}`;
+              if (
+                originalRequest.headers
+              ) {
+                originalRequest.headers.Authorization =
+                  `Bearer ${token}`;
+              }
 
-              return apiClient(originalRequest);
+              return apiClient(
+                originalRequest,
+              );
             })
-            .catch((err) => Promise.reject(err));
+            .catch((err) =>
+              Promise.reject(err),
+            );
         }
 
         originalRequest._retry = true;
@@ -59,12 +92,15 @@ export const setupInterceptors = () => {
             tokenStorage.getRefreshToken();
 
           if (!refreshToken) {
-            throw new Error("No refresh token");
+            throw new Error(
+              "No refresh token",
+            );
           }
 
-          const tokens = await refreshRequest(
-            refreshToken,
-          );
+          const tokens =
+            await refreshRequest(
+              refreshToken,
+            );
 
           tokenStorage.setAccessToken(
             tokens.access_token,
@@ -74,20 +110,35 @@ export const setupInterceptors = () => {
             tokens.refresh_token,
           );
 
-          processQueue(null, tokens.access_token);
+          processQueue(
+            null,
+            tokens.access_token,
+          );
 
-          originalRequest.headers.Authorization =
-            `Bearer ${tokens.access_token}`;
+          if (
+            originalRequest.headers
+          ) {
+            originalRequest.headers.Authorization =
+              `Bearer ${tokens.access_token}`;
+          }
 
-          return apiClient(originalRequest);
+          return apiClient(
+            originalRequest,
+          );
         } catch (refreshError) {
-          processQueue(refreshError, null);
+          processQueue(
+            refreshError,
+            null,
+          );
 
           tokenStorage.clear();
 
-          window.location.href = "/login";
+          window.location.href =
+            "/login";
 
-          return Promise.reject(refreshError);
+          return Promise.reject(
+            refreshError,
+          );
         } finally {
           isRefreshing = false;
         }
