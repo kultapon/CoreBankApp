@@ -3,6 +3,7 @@ import { apiClient } from "../../../shared/api/client";
 import type {
   PaginatedResponse,
   Product,
+  UsdPriceResponse,
 } from "../model/product.types";
 
 export interface GetProductsParams {
@@ -35,14 +36,6 @@ export const getProductsRequest =
 
     return response.data;
   };
-
-  export interface UsdPriceResponse {
-  price_rub: string;
-
-  usd_rate: string;
-
-  price_usd: string;
-}
 
 export const getUsdPriceRequest =
   async (

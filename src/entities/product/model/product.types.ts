@@ -41,3 +41,11 @@ export interface PaginatedResponse<T> {
 
   pages: number;
 }
+
+export interface UsdPriceResponse {
+  price_rub: string;
+
+  usd_rate: string;
+
+  price_usd: string;
+}
