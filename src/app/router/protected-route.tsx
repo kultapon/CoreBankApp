@@ -1,16 +1,8 @@
-import {
-  Navigate,
-} from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
-import type {
-  PropsWithChildren,
-} from "react";
+import { useAuthStore } from "@/features/auth/store/auth.store";
 
-import { useAuthStore } from "../../features/auth/store/auth.store";
-
-export const ProtectedRoute = ({
-  children,
-}: PropsWithChildren) => {
+export const ProtectedRoute = () => {
   const user = useAuthStore(
     (state) => state.user,
   );
@@ -24,5 +16,5 @@ export const ProtectedRoute = ({
     );
   }
 
-  return children;
+  return <Outlet />;
 };

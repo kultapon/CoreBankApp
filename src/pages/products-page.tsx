@@ -7,7 +7,9 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "./components/ui";
+} from "@/components/ui/card";
+
+import { Button } from "@/components/ui/button";
 
 export const ProductsPage = () => {
   const [page, setPage] =
@@ -16,119 +18,152 @@ export const ProductsPage = () => {
   const productsQuery =
     useProducts({
       page,
-      size: 10,
+      size: 6,
     });
 
   if (productsQuery.isLoading) {
     return (
-      <div className="p-6">
+      <div className="flex min-h-screen items-center justify-center">
         Loading...
       </div>
     );
   }
 
-  if (productsQuery.isError) {
+  if (
+    productsQuery.isError ||
+    !productsQuery.data
+  ) {
     return (
-      <div className="p-6">
+      <div className="flex min-h-screen items-center justify-center">
         Products loading error
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>
+    <div className="min-h-screen bg-slate-100 p-6">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold">
             Products
-          </CardTitle>
-        </CardHeader>
+          </h1>
 
-        <CardContent>
-          <div className="space-y-4">
-            {productsQuery.data?.items.map(
-              (product) => (
-                <div
-                  key={product.id}
-                  className="rounded border p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">
-                      {product.name}
-                    </h3>
+          <div className="text-sm text-slate-500">
+            Total:{" "}
+            {
+              productsQuery.data
+                .total
+            }
+          </div>
+        </div>
 
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {productsQuery.data.items.map(
+            (product) => (
+              <Card
+                key={product.id}
+              >
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between text-lg">
                     <span>
+                      {
+                        product.name
+                      }
+                    </span>
+
+                    <span className="text-base font-normal text-slate-500">
                       ₽
                       {
                         product.price_rub
                       }
                     </span>
-                  </div>
+                  </CardTitle>
+                </CardHeader>
 
-                  <p className="mt-2 text-sm text-slate-600">
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-slate-600">
                     {
                       product.description
                     }
                   </p>
 
-                  <div className="mt-3 text-sm text-slate-500">
-                    Category:{" "}
-                    {
-                      product.category
-                        .name
-                    }
+                  <div className="space-y-1 text-sm">
+                    <div>
+                      <span className="font-medium">
+                        Category:
+                      </span>{" "}
+                      {
+                        product
+                          .category
+                          .name
+                      }
+                    </div>
+
+                    <div>
+                      <span className="font-medium">
+                        Creator:
+                      </span>{" "}
+                      {
+                        product
+                          .creator
+                          .username
+                      }
+                    </div>
                   </div>
 
-                  <div className="text-sm text-slate-500">
-                    Creator:{" "}
-                    {
-                      product.creator
-                        .username
-                    }
-                  </div>
-                </div>
-              ),
-            )}
+                  {product.common_note && (
+                    <div className="rounded bg-slate-100 p-2 text-sm text-slate-700">
+                      {
+                        product.common_note
+                      }
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ),
+          )}
+        </div>
+
+        <div className="mt-8 flex items-center justify-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() =>
+              setPage(
+                (prev) =>
+                  prev - 1,
+              )
+            }
+            disabled={page === 1}
+          >
+            Previous
+          </Button>
+
+          <div className="text-sm font-medium">
+            Page {page} of{" "}
+            {
+              productsQuery.data
+                .pages
+            }
           </div>
 
-          <div className="mt-6 flex gap-2">
-            <button
-              onClick={() =>
-                setPage(
-                  (prev) =>
-                    prev - 1,
-                )
-              }
-              disabled={page === 1}
-              className="rounded border px-3 py-1"
-            >
-              Prev
-            </button>
-
-            <div>
-              Page {page}
-            </div>
-
-            <button
-              onClick={() =>
-                setPage(
-                  (prev) =>
-                    prev + 1,
-                )
-              }
-              disabled={
-                page >=
-                (productsQuery.data
-                  ?.pages ??
-                  1)
-              }
-              className="rounded border px-3 py-1"
-            >
-              Next
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+          <Button
+            variant="outline"
+            onClick={() =>
+              setPage(
+                (prev) =>
+                  prev + 1,
+              )
+            }
+            disabled={
+              page >=
+              productsQuery.data
+                .pages
+            }
+          >
+            Next
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
