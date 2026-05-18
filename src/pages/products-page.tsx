@@ -6,6 +6,8 @@ import { useAuthStore } from "@/features/auth/store/auth.store";
 
 import { canSeeSpecialNote } from "@/shared/permissions";
 
+import { ProductPrice } from "@/entities/product/ui/product-price";
+
 import {
   Card,
   CardContent,
@@ -78,13 +80,10 @@ export const ProductsPage = () => {
                         product.name
                       }
                     </span>
-
-                    <span className="text-base font-normal text-slate-500">
-                      ₽
-                      {
-                        product.price_rub
-                      }
-                    </span>
+                    <ProductPrice
+                      productId={product.id}
+                      priceRub={product.price_rub}
+                    />
                   </CardTitle>
                 </CardHeader>
 

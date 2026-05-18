@@ -35,3 +35,23 @@ export const getProductsRequest =
 
     return response.data;
   };
+
+  export interface UsdPriceResponse {
+  price_rub: string;
+
+  usd_rate: string;
+
+  price_usd: string;
+}
+
+export const getUsdPriceRequest =
+  async (
+    productId: number,
+  ): Promise<UsdPriceResponse> => {
+    const response =
+      await apiClient.get(
+        `/products/usd-price/${productId}`,
+      );
+
+    return response.data;
+  };
