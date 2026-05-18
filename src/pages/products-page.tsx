@@ -1,6 +1,10 @@
 import { useState } from "react";
 
-import { useProducts } from "../entities/product/hooks/use-products";
+import { useProducts } from "@/entities/product/hooks/use-products";
+
+import { useAuthStore } from "@/features/auth/store/auth.store";
+
+import { canSeeSpecialNote } from "@/shared/permissions";
 
 import {
   Card,
@@ -12,6 +16,10 @@ import {
 import { Button } from "@/components/ui/button";
 
 export const ProductsPage = () => {
+  const user = useAuthStore(
+    (state) => state.user,
+  );
+
   const [page, setPage] =
     useState(1);
 
@@ -98,17 +106,6 @@ export const ProductsPage = () => {
                           .name
                       }
                     </div>
-
-                    <div>
-                      <span className="font-medium">
-                        Creator:
-                      </span>{" "}
-                      {
-                        product
-                          .creator
-                          .username
-                      }
-                    </div>
                   </div>
 
                   {product.common_note && (
@@ -118,6 +115,17 @@ export const ProductsPage = () => {
                       }
                     </div>
                   )}
+
+                  {canSeeSpecialNote(
+                    user,
+                  ) &&
+                    product.special_note && (
+                      <div className="rounded bg-amber-100 p-2 text-sm text-amber-800">
+                        {
+                          product.special_note
+                        }
+                      </div>
+                    )}
                 </CardContent>
               </Card>
             ),
