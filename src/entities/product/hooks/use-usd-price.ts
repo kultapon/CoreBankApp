@@ -4,6 +4,7 @@ import { getUsdPriceRequest } from "../api/products.api";
 
 export const useUsdPrice = (
   productId: number | null,
+  enabled?: boolean,
 ) => {
   return useQuery({
     queryKey: [
@@ -16,7 +17,8 @@ export const useUsdPrice = (
         productId!,
       ),
 
-    enabled:
-      productId !== null,
+    enabled: enabled !== undefined 
+      ? enabled && productId !== null
+      : productId !== null,
   });
 };

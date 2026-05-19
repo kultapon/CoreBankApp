@@ -27,6 +27,35 @@ export const LoginPage = () => {
   const [password, setPassword] =
     useState("");
 
+  const getErrorMessage = (error: unknown) => {
+    if (
+      error &&
+      typeof error === "object" &&
+      "response" in error
+    ) {
+      const axiosError = error as {
+        response?: {
+          status: number;
+          data?: {
+            message?: string;
+            detail?: string;
+          };
+        };
+      };
+
+      if (axiosError.response?.status === 422) {
+        return null;
+      }
+
+      return (
+        axiosError.response?.data?.message ||
+        axiosError.response?.data?.detail ||
+        null
+      );
+    }
+    return null;
+  };
+
   const handleLogin = () => {
     loginMutation.mutate(
       {
@@ -50,7 +79,15 @@ export const LoginPage = () => {
 
             setUser(user);
 
-            navigate("/");
+            if (
+                user.role ===
+                "admin"
+              ) {
+                  navigate("/admin", { replace: true });
+            } else {
+                  navigate("/", { replace: true });
+            }
+            
           } catch (error) {
             console.error(error);
           }
@@ -106,7 +143,7 @@ export const LoginPage = () => {
 
       {loginMutation.isError && (
         <p className="mt-3 text-red-500">
-          Login error
+          {getErrorMessage(loginMutation.error) || "Login error"}
         </p>
       )}
     </div>
