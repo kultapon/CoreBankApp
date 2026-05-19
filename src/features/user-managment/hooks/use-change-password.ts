@@ -26,10 +26,6 @@ export const useChangePassword = () => {
       await queryClient.invalidateQueries({
         queryKey: ["users"],
       });
-
-      await queryClient.refetchQueries({
-        queryKey: ["users"],
-      });
     },
   });
 };

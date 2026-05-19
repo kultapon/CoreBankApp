@@ -16,23 +16,10 @@ export const useDeleteUser =
       mutationFn:
         deleteUserRequest,
 
-      onSuccess:
-        async () => {
-          await queryClient.invalidateQueries(
-            {
-              queryKey: [
-                "users",
-              ],
-            },
-          );
-
-          await queryClient.refetchQueries(
-            {
-              queryKey: [
-                "users",
-              ],
-            },
-          );
+      onSuccess: async () => {
+          await queryClient.invalidateQueries({
+            queryKey: ["users"],
+          });
         },
     });
   };

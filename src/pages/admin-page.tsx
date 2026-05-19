@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Card } from "@/components/ui/card";
 
@@ -18,6 +18,8 @@ import { useDeleteUser } from "@/features/user-managment/hooks/use-delete-user";
 
 import { ChangePasswordDialog } from "@/features/user-managment/ui/change-password-dialog";
 
+import type { User } from "@/entities/user/model/user.types";
+
 export const AdminPage = () => {
   const currentUser =
     useAuthStore(
@@ -29,6 +31,8 @@ export const AdminPage = () => {
 
   const [includeBanned, setIncludeBanned] =
     useState(true);
+
+  const [localUsers, setLocalUsers] = useState<User[]>([]);
 
   const {
     data,
@@ -42,6 +46,12 @@ export const AdminPage = () => {
       includeBanned,
   });
 
+  useEffect(() => {
+    if (data?.items) {
+      setLocalUsers(data.items);
+    }
+  }, [data]);
+
   const banMutation =
     useBanUser();
 
@@ -50,6 +60,30 @@ export const AdminPage = () => {
 
   const deleteMutation =
     useDeleteUser();
+
+  useEffect(() => {
+    if (banMutation.isSuccess) {
+      setLocalUsers((prev) =>
+        prev.map((user) =>
+          user.id === banMutation.variables?.userId
+            ? { ...user, is_banned: true }
+            : user
+        )
+      );
+    }
+  }, [banMutation.isSuccess]);
+
+  useEffect(() => {
+    if (unbanMutation.isSuccess) {
+      setLocalUsers((prev) =>
+        prev.map((user) =>
+          user.id === unbanMutation.variables
+            ? { ...user, is_banned: false }
+            : user
+        )
+      );
+    }
+  }, [unbanMutation.isSuccess]);
 
   if (
     currentUser?.role !==
@@ -60,7 +94,7 @@ export const AdminPage = () => {
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !localUsers.length) {
     return (
       <div>
         Loading...
@@ -93,7 +127,7 @@ export const AdminPage = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {data?.items.map(
+        {localUsers.map(
           (user) => (
             <Card
               key={user.id}
