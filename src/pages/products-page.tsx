@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import { useSearchParams } from "react-router-dom";
 
 import {
@@ -23,7 +21,7 @@ import {
 
 import { useProducts } from "@/entities/product/hooks/use-products";
 
-import { useUsdPrice } from "@/entities/product/hooks/use-usd-price";
+import { ProductPrice } from "@/entities/product/ui/product-price";
 
 import { useAuthStore } from "@/features/auth/store/auth.store";
 
@@ -45,15 +43,6 @@ export const ProductsPage = () => {
 
   const [searchParams, setSearchParams] =
     useSearchParams();
-
-  const [hoveredProductId, setHoveredProductId] =
-    useState<number | null>(null);
-
-  const {
-    data: usdPrice,
-  } = useUsdPrice(
-    hoveredProductId,
-  );
 
   const q =
     searchParams.get("q") ??
@@ -263,52 +252,15 @@ export const ProductsPage = () => {
                 </div>
 
                 <div className="flex items-center gap-1 font-semibold">
-                  <span>
-                    {
+                  <ProductPrice
+                    productId={
+                      product.id
+                    }
+                    priceRub={
                       product.price_rub
-                    }{" "}
-                    BYN
-                  </span>
-
-                  <span
-                    className="cursor-pointer text-slate-500"
-                    onMouseEnter={() =>
-                      setHoveredProductId(
-                        product.id,
-                      )
                     }
-                    onMouseLeave={() =>
-                      setHoveredProductId(
-                        null,
-                      )
-                    }
-                  >
-                    *
-                  </span>
+                  />
                 </div>
-
-                {hoveredProductId ===
-                  product.id &&
-                  usdPrice && (
-                    <div className="rounded-md border bg-slate-50 p-2 text-xs">
-                      <div>
-                        USD
-                        rate:{" "}
-                        {
-                          usdPrice.usd_rate
-                        }
-                      </div>
-
-                      <div>
-                        USD
-                        price:{" "}
-                        {
-                          usdPrice.price_usd
-                        }{" "}
-                        $
-                      </div>
-                    </div>
-                  )}
 
                 <div className="rounded-md bg-slate-100 p-2">
                   <div className="text-xs text-slate-500">
