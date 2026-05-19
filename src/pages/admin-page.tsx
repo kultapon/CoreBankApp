@@ -66,7 +66,7 @@ export const AdminPage = () => {
       setLocalUsers((prev) =>
         prev.map((user) =>
           user.id === banMutation.variables?.userId
-            ? { ...user, is_banned: true }
+            ? { ...user, banned_at: new Date().toISOString() }
             : user
         )
       );
@@ -78,7 +78,7 @@ export const AdminPage = () => {
       setLocalUsers((prev) =>
         prev.map((user) =>
           user.id === unbanMutation.variables
-            ? { ...user, is_banned: false }
+            ? { ...user, banned_at: null }
             : user
         )
       );
@@ -147,7 +147,7 @@ export const AdminPage = () => {
 
                 <div className="text-sm">
                   Status:{" "}
-                  {user.is_banned
+                  {user.banned_at
                     ? "Banned"
                     : "Active"}
                 </div>
@@ -156,7 +156,7 @@ export const AdminPage = () => {
               <div className="flex flex-wrap gap-2">
                 <ChangePasswordDialog user={user} />
 
-                {user.is_banned ? (
+                {user.banned_at ? (
                   <Button
                     variant="outline"
                     onClick={() =>

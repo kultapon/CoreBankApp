@@ -8,7 +8,7 @@ export interface User {
     | "moderator"
     | "admin";
 
-  is_banned: boolean;
+  banned_at: string | null;
 
   created_at: string;
 }

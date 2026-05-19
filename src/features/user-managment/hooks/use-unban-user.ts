@@ -22,12 +22,12 @@ export const useUnbanUser = () => {
         { queryKey: ["users"] },
         (old: unknown) => {
           if (!old || typeof old !== "object") return old;
-          const data = old as { items?: Array<{ id: number; is_banned: boolean }> };
+          const data = old as { items?: Array<{ id: number; banned_at: string | null }> };
           if (!data.items) return old;
           return {
             ...data,
             items: data.items.map((user) =>
-              user.id === userId ? { ...user, is_banned: false } : user
+              user.id === userId ? { ...user, banned_at: null } : user
             ),
           };
         }
