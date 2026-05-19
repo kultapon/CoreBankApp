@@ -7,24 +7,31 @@ import { useAuthStore } from "@/features/auth/store/auth.store";
 import { tokenStorage } from "@/features/auth/token.storage";
 
 export const Header = () => {
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const user = useAuthStore(
-    (state) => state.user,
-  );
+  const user =
+    useAuthStore(
+      (state) =>
+        state.user,
+    );
 
   const logout =
     useAuthStore(
-      (state) => state.logout,
+      (state) =>
+        state.logout,
     );
 
-  const handleLogout = () => {
-    tokenStorage.clear();
+  const handleLogout =
+    () => {
+      tokenStorage.clear();
 
-    logout();
+      logout();
 
-    navigate("/login");
-  };
+      navigate(
+        "/login",
+      );
+    };
 
   return (
     <header className="border-b bg-white">
@@ -37,12 +44,28 @@ export const Header = () => {
           <nav className="flex items-center gap-4 text-sm">
             <button
               onClick={() =>
-                navigate("/")
+                navigate(
+                  "/",
+                )
               }
               className="text-slate-600 transition hover:text-black"
             >
               Products
             </button>
+
+            {user?.role ===
+              "moderator" && (
+              <button
+                onClick={() =>
+                  navigate(
+                    "/categories",
+                  )
+                }
+                className="text-slate-600 transition hover:text-black"
+              >
+                Categories
+              </button>
+            )}
           </nav>
         </div>
 
@@ -55,7 +78,9 @@ export const Header = () => {
             </div>
 
             <div className="text-xs text-slate-500">
-              {user?.role}
+              {
+                user?.role
+              }
             </div>
           </div>
 

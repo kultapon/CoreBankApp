@@ -6,6 +6,9 @@ import { LoginPage } from "@/pages/login-page";
 
 import { ProductsPage } from "@/pages/products-page";
 
+import { CategoriesPage } from "@/pages/categories-page";
+
+
 import { ProtectedRoute } from "./protected-route";
 
 import { AppLayout } from "../layouts/app-layout";
@@ -30,6 +33,13 @@ export const router =
 
               element:
                 <ProductsPage />,
+            },
+            {
+              path:
+                "/categories",
+
+              element:
+                <CategoriesPage />,
             },
           ],
         },
