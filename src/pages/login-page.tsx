@@ -54,9 +54,9 @@ export const LoginPage = () => {
                 user.role ===
                 "admin"
               ) {
-                  navigate("/admin");
+                  navigate("/admin", { replace: true });
             } else {
-                  navigate("/");
+                  navigate("/", { replace: true });
             }
             
           } catch (error) {

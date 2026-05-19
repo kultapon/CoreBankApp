@@ -42,29 +42,57 @@ export const Header = () => {
           </h1>
 
           <nav className="flex items-center gap-4 text-sm">
-            <button
-              onClick={() =>
-                navigate(
-                  "/",
-                )
-              }
-              className="text-slate-600 transition hover:text-black"
-            >
-              Products
-            </button>
-
-            {user?.role ===
-              "moderator" && (
+            {user?.role === "admin" && (
               <button
                 onClick={() =>
                   navigate(
-                    "/categories",
+                    "/admin",
                   )
                 }
                 className="text-slate-600 transition hover:text-black"
               >
-                Categories
+                Users
               </button>
+            )}
+
+            {user?.role === "user" && (
+              <button
+                onClick={() =>
+                  navigate(
+                    "/",
+                  )
+                }
+                className="text-slate-600 transition hover:text-black"
+              >
+                Products
+              </button>
+            )}
+
+            {user?.role ===
+              "moderator" && (
+              <>
+                <button
+                  onClick={() =>
+                    navigate(
+                      "/",
+                    )
+                  }
+                  className="text-slate-600 transition hover:text-black"
+                >
+                  Products
+                </button>
+
+                <button
+                  onClick={() =>
+                    navigate(
+                      "/categories",
+                    )
+                  }
+                  className="text-slate-600 transition hover:text-black"
+                >
+                  Categories
+                </button>
+              </>
             )}
 
             {user?.role ===
