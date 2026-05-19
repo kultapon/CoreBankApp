@@ -1,97 +1,143 @@
-import { AxiosError } from "axios";
-
 import { apiClient } from "./client";
 
-import { refreshRequest } from "../../features/auth/api/auth.api";
+import { refreshRequest } from "@/features/auth/api/auth.api";
 
-import { tokenStorage } from "../../features/auth/token.storage";
+import { tokenStorage } from "@/features/auth/token.storage";
 
 let isRefreshing = false;
 
 let failedQueue: Array<{
   resolve: (token: string) => void;
-  reject: (error: unknown) => void;
+
+  reject: (
+    error: unknown,
+  ) => void;
 }> = [];
 
 const processQueue = (
   error: unknown,
   token: string | null = null,
 ) => {
-  failedQueue.forEach((promise) => {
-    if (error) {
-      promise.reject(error);
-    } else if (token) {
-      promise.resolve(token);
-    }
-  });
+  failedQueue.forEach(
+    (promise) => {
+      if (error) {
+        promise.reject(
+          error,
+        );
+      } else if (
+        token
+      ) {
+        promise.resolve(
+          token,
+        );
+      }
+    },
+  );
 
   failedQueue = [];
 };
 
-export const setupInterceptors = () => {
-  apiClient.interceptors.request.use(
-    (config) => {
-      const accessToken =
-        tokenStorage.getAccessToken();
+export const setupInterceptors =
+  () => {
+    apiClient.interceptors.response.use(
+      (response) =>
+        response,
 
-      if (accessToken) {
-        config.headers.Authorization =
-          `Bearer ${accessToken}`;
-      }
+      async (
+        error,
+      ) => {
+        const originalRequest =
+          error.config;
 
-      return config;
-    },
-  );
+        if (
+          error.response
+            ?.status !==
+          401
+        ) {
+          return Promise.reject(
+            error,
+          );
+        }
 
-  apiClient.interceptors.response.use(
-    (response) => response,
+        if (
+          originalRequest.url?.includes(
+            "/auth_users/refresh",
+          )
+        ) {
+          tokenStorage.clear();
 
-    async (error: AxiosError) => {
-      const originalRequest =
-        error.config as typeof error.config & {
-          _retry?: boolean;
-        };
+          window.location.href =
+            "/login";
 
-      if (
-        error.response?.status === 401 &&
-        originalRequest &&
-        !originalRequest._retry
-      ) {
-        if (isRefreshing) {
+          return Promise.reject(
+            error,
+          );
+        }
+
+        if (
+          originalRequest._retry
+        ) {
+          tokenStorage.clear();
+
+          window.location.href =
+            "/login";
+
+          return Promise.reject(
+            error,
+          );
+        }
+
+        if (
+          isRefreshing
+        ) {
           return new Promise<string>(
-            (resolve, reject) => {
-              failedQueue.push({
-                resolve,
-                reject,
-              });
+            (
+              resolve,
+              reject,
+            ) => {
+              failedQueue.push(
+                {
+                  resolve,
+                  reject,
+                },
+              );
             },
           )
-            .then((token) => {
-              if (
-                originalRequest.headers
-              ) {
+            .then(
+              (
+                token,
+              ) => {
                 originalRequest.headers.Authorization =
                   `Bearer ${token}`;
-              }
 
-              return apiClient(
-                originalRequest,
-              );
-            })
-            .catch((err) =>
-              Promise.reject(err),
+                return apiClient(
+                  originalRequest,
+                );
+              },
+            )
+            .catch(
+              (
+                err,
+              ) =>
+                Promise.reject(
+                  err,
+                ),
             );
         }
 
-        originalRequest._retry = true;
+        originalRequest._retry =
+          true;
 
-        isRefreshing = true;
+        isRefreshing =
+          true;
 
         try {
           const refreshToken =
             tokenStorage.getRefreshToken();
 
-          if (!refreshToken) {
+          if (
+            !refreshToken
+          ) {
             throw new Error(
               "No refresh token",
             );
@@ -115,17 +161,15 @@ export const setupInterceptors = () => {
             tokens.access_token,
           );
 
-          if (
-            originalRequest.headers
-          ) {
-            originalRequest.headers.Authorization =
-              `Bearer ${tokens.access_token}`;
-          }
+          originalRequest.headers.Authorization =
+            `Bearer ${tokens.access_token}`;
 
           return apiClient(
             originalRequest,
           );
-        } catch (refreshError) {
+        } catch (
+          refreshError
+        ) {
           processQueue(
             refreshError,
             null,
@@ -140,11 +184,9 @@ export const setupInterceptors = () => {
             refreshError,
           );
         } finally {
-          isRefreshing = false;
+          isRefreshing =
+            false;
         }
-      }
-
-      return Promise.reject(error);
-    },
-  );
-};
+      },
+    );
+  };
