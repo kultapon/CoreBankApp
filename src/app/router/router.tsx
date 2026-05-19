@@ -2,25 +2,37 @@ import {
   createBrowserRouter,
 } from "react-router-dom";
 
-import { LoginPage } from "../../pages/login-page";
+import { LoginPage } from "@/pages/login-page";
 
-import { ProductsPage } from "../../pages/products-page";
+import { ProductsPage } from "@/pages/products-page";
 
 import { ProtectedRoute } from "./protected-route";
 
-export const router = createBrowserRouter([
-  {
-    path: "/login",
-    element: <LoginPage />,
-  },
+import { AppLayout } from "../layouts/app-layout";
 
-  {
-    element: <ProtectedRoute />,
-    children: [
-      {
-        path: "/",
-        element: <ProductsPage />,
-      },
-    ],
-  },
-]);
+export const router =
+  createBrowserRouter([
+    {
+      path: "/login",
+      element: <LoginPage />,
+    },
+
+    {
+      element: <ProtectedRoute />,
+
+      children: [
+        {
+          element: <AppLayout />,
+
+          children: [
+            {
+              path: "/",
+
+              element:
+                <ProductsPage />,
+            },
+          ],
+        },
+      ],
+    },
+  ]);

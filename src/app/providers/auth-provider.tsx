@@ -31,20 +31,21 @@ export const AuthProvider = ({
 
   useEffect(() => {
     const initAuth = async () => {
-      const accessToken =
-        tokenStorage.getAccessToken();
-
-      if (!accessToken) {
-        setIsLoading(false);
-
-        return;
-      }
-
       try {
+        const accessToken =
+          tokenStorage.getAccessToken();
+
+        if (!accessToken) {
+          setIsLoading(false);
+
+          return;
+        }
+
         const user =
           await getMeRequest();
 
         setUser(user);
+        console.log(user);
       } catch (error) {
         console.error(error);
 
@@ -60,7 +61,11 @@ export const AuthProvider = ({
   }, [logout, setUser]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   return children;
