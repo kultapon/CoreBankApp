@@ -32,7 +32,7 @@ export interface BanUserPayload {
 }
 
 export interface ChangePasswordPayload {
-  new_password: string;
+  password: string;
 }
 
 export const getUsersRequest =

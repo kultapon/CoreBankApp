@@ -16,6 +16,8 @@ import { useUnbanUser } from "@/features/user-managment/hooks/use-unban-user";
 
 import { useDeleteUser } from "@/features/user-managment/hooks/use-delete-user";
 
+import { ChangePasswordDialog } from "@/features/user-managment/ui/change-password-dialog";
+
 export const AdminPage = () => {
   const currentUser =
     useAuthStore(
@@ -118,6 +120,8 @@ export const AdminPage = () => {
               </div>
 
               <div className="flex flex-wrap gap-2">
+                <ChangePasswordDialog user={user} />
+
                 {user.is_banned ? (
                   <Button
                     variant="outline"
