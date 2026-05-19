@@ -9,6 +9,8 @@ import { ProductsPage } from "@/pages/products-page";
 import { CategoriesPage } from "@/pages/categories-page";
 
 
+import { AdminPage } from "@/pages/admin-page";
+
 import { ProtectedRoute } from "./protected-route";
 
 import { AppLayout } from "../layouts/app-layout";
@@ -40,6 +42,10 @@ export const router =
 
               element:
                 <CategoriesPage />,
+            },
+            {
+              path: "/admin",
+              element: <AdminPage />,
             },
           ],
         },

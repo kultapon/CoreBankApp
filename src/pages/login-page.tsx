@@ -50,7 +50,15 @@ export const LoginPage = () => {
 
             setUser(user);
 
-            navigate("/");
+            if (
+                user.role ===
+                "admin"
+              ) {
+                  navigate("/admin");
+            } else {
+                  navigate("/");
+            }
+            
           } catch (error) {
             console.error(error);
           }

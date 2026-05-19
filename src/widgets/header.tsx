@@ -66,6 +66,20 @@ export const Header = () => {
                 Categories
               </button>
             )}
+
+            {user?.role ===
+              "admin" && (
+              <button
+                onClick={() =>
+                  navigate(
+                    "/admin",
+                  )
+                }
+                className="text-slate-600 transition hover:text-black"
+              >
+                Admin
+              </button>
+            )}
           </nav>
         </div>
 
