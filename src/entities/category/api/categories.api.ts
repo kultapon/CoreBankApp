@@ -1,14 +1,16 @@
 import { apiClient } from "@/shared/api/client";
 
 import type {
-  CategoriesResponse,
-} from "../types/category.types";
+  Category,
+} from "../model/category.types";
 
-export const getCategoriesRequest =
-  async (): Promise<CategoriesResponse> => {
+export const getAllCategoriesRequest =
+  async (): Promise<
+    Category[]
+  > => {
     const response =
       await apiClient.get(
-        "/categories",
+        "/categories/all",
       );
 
     return response.data;

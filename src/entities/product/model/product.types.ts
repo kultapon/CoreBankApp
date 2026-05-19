@@ -19,7 +19,7 @@ export interface Product {
 
   common_note: string | null;
 
-  special_note: string | null;
+  special_note?: string | null;
 
   created_at: string;
 

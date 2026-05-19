@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getCategoriesRequest } from "../api/categories.api";
+import { getAllCategoriesRequest } from "../api/categories.api";
 
 export const useCategories =
   () => {
@@ -10,6 +10,6 @@ export const useCategories =
       ],
 
       queryFn:
-        getCategoriesRequest,
+        getAllCategoriesRequest,
     });
   };

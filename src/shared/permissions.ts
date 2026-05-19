@@ -1,5 +1,8 @@
 import type { User } from "@/features/auth/types/auth.types";
 
+import type { Product } from "../entities/product/model/product.types";
+
+
 export const isAdmin = (
   user: User | null,
 ) => {
@@ -40,3 +43,39 @@ export const canManageUsers = (
 ) => {
   return user?.role === "admin";
 };
+
+export const canEditProduct =
+  (
+    user: User | null,
+    product: Product,
+  ) => {
+    if (!user) {
+      return false;
+    }
+
+    if (
+      user.role ===
+      "moderator"
+    ) {
+      return true;
+    }
+
+    return (
+      product.creator.id ===
+      user.id
+    );
+  };
+
+export const canDeleteProduct =
+  (
+    user: User | null,
+  ) => {
+    if (!user) {
+      return false;
+    }
+
+    return (
+      user.role ===
+      "moderator"
+    );
+  };

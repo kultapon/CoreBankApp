@@ -1,11 +1,17 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useState } from "react";
 
 import { useSearchParams } from "react-router-dom";
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
 import { Input } from "@/components/ui/input";
+
+import { Button } from "@/components/ui/button";
 
 import {
   Select,
@@ -15,26 +21,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Button } from "@/components/ui/button";
-
-import { ProductPrice } from "@/entities/product/ui/product-price";
-
 import { useProducts } from "@/entities/product/hooks/use-products";
 
-import { useCategories } from "@/entities/category/hooks/use-categories";
+import { useUsdPrice } from "@/entities/product/hooks/use-usd-price";
 
 import { useAuthStore } from "@/features/auth/store/auth.store";
 
-import { canSeeSpecialNote } from "@/shared/permissions";
-
-import { useDebounce } from "@/shared/hooks/use-debounce";
-
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  canDeleteProduct,
+  canEditProduct,
+} from "../shared/permissions";
+
+import { CreateProductDialog } from "../features/product-managment/ui/create-product-dialog";
+
+import { EditProductDialog } from "../features/product-managment/ui/edit-product-dialog";
+
+import { DeleteProductDialog } from "../features/product-managment/ui/delete-product-dialog";
 
 export const ProductsPage = () => {
   const user = useAuthStore(
@@ -44,271 +46,215 @@ export const ProductsPage = () => {
   const [searchParams, setSearchParams] =
     useSearchParams();
 
-  const page = Number(
-    searchParams.get("page") ??
-      1,
+  const [hoveredProductId, setHoveredProductId] =
+    useState<number | null>(null);
+
+  const {
+    data: usdPrice,
+  } = useUsdPrice(
+    hoveredProductId,
   );
 
   const q =
     searchParams.get("q") ??
     "";
 
-  const categoryId =
-    searchParams.get(
-      "category_id",
-    );
-
   const sortBy =
     searchParams.get(
       "sort_by",
-    ) ?? "created_at";
+    ) ??
+    "created_at";
 
   const order =
-  (searchParams.get(
-    "order",
-  ) as
-    | "asc"
-    | "desc") ??
-  "desc";
+    (searchParams.get(
+      "order",
+    ) as
+      | "asc"
+      | "desc") ??
+    "desc";
 
-  const [
-    searchValue,
-    setSearchValue,
-  ] = useState(q);
+  const {
+    data,
+    isLoading,
+  } = useProducts({
+    q,
+    sort_by:
+      sortBy,
+    order,
+    page: 1,
+    size: 20,
+  });
 
-  const debouncedSearch =
-    useDebounce(
-      searchValue,
-      500,
-    );
-
-  const updateParam = (
-    key: string,
-    value: string,
-  ) => {
-    const params =
-      new URLSearchParams(
-        searchParams,
-      );
-
-    if (!value) {
-      params.delete(key);
-    } else {
-      params.set(key, value);
-    }
-
-    if (key !== "page") {
-      params.set("page", "1");
-    }
-
-    setSearchParams(params);
-  };
-
-  useEffect(() => {
-    updateParam(
-      "q",
-      debouncedSearch,
-    );
-  }, [debouncedSearch]);
-
-  const productsQuery =
-    useProducts({
-      page,
-      size: 6,
-
-      q:
-        q.length > 0
-          ? q
-          : undefined,
-
-      category_id:
-        categoryId
-          ? Number(
-              categoryId,
-            )
-          : undefined,
-
-      sort_by: sortBy,
-
-      order,
-    });
-
-  const categoriesQuery =
-    useCategories();
-
-  if (
-    productsQuery.isLoading
-  ) {
+  if (isLoading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
+      <div>
         Loading...
-      </div>
-    );
-  }
-
-  if (
-    productsQuery.isError ||
-    !productsQuery.data
-  ) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        Products loading error
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-xl bg-white p-4 shadow-sm md:flex-row">
+      <div className="flex items-center justify-between gap-4">
         <Input
           placeholder="Search products..."
-          value={searchValue}
-          onChange={(e) =>
-            setSearchValue(
-              e.target.value,
-            )
-          }
+          value={q}
+          onChange={(
+            event,
+          ) => {
+            const value =
+              event.target.value;
+
+            const params =
+              new URLSearchParams(
+                searchParams,
+              );
+
+            if (
+              value
+            ) {
+              params.set(
+                "q",
+                value,
+              );
+            } else {
+              params.delete(
+                "q",
+              );
+            }
+
+            setSearchParams(
+              params,
+            );
+          }}
+          className="max-w-sm"
         />
 
-        <Select
-          value={
-            categoryId ??
-            "all"
-          }
-          onValueChange={(
-            value,
-          ) =>
-            updateParam(
-              "category_id",
-              value === "all"
-                ? ""
-                : value,
-            )
-          }
-        >
-          <SelectTrigger className="w-[220px]">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-
-          <SelectContent>
-            <SelectItem value="all">
-              All categories
-            </SelectItem>
-
-            {categoriesQuery.data?.items.map(
-              (
-                category,
-              ) => (
-                <SelectItem
-                  key={
-                    category.id
-                  }
-                  value={String(
-                    category.id,
-                  )}
-                >
-                  {
-                    category.name
-                  }
-                </SelectItem>
-              ),
-            )}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={sortBy}
-          onValueChange={(
-            value,
-          ) =>
-            updateParam(
-              "sort_by",
+        <div className="flex items-center gap-2">
+          <Select
+            value={
+              sortBy
+            }
+            onValueChange={(
               value,
-            )
-          }
-        >
-          <SelectTrigger className="w-[220px]">
-            <SelectValue />
-          </SelectTrigger>
+            ) => {
+              const params =
+                new URLSearchParams(
+                  searchParams,
+                );
 
-          <SelectContent>
-            <SelectItem value="created_at">
-              Created at
-            </SelectItem>
+              params.set(
+                "sort_by",
+                value,
+              );
 
-            <SelectItem value="price_rub">
-              Price
-            </SelectItem>
+              setSearchParams(
+                params,
+              );
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
 
-            <SelectItem value="name">
-              Name
-            </SelectItem>
-          </SelectContent>
-        </Select>
+            <SelectContent>
+              <SelectItem value="created_at">
+                Created at
+              </SelectItem>
 
-        <Select
-          value={order}
-          onValueChange={(
-            value,
-          ) =>
-            updateParam(
-              "order",
-              value,
-            )
-          }
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
+              <SelectItem value="price_rub">
+                Price
+              </SelectItem>
 
-          <SelectContent>
-            <SelectItem value="asc">
-              ASC
-            </SelectItem>
+              <SelectItem value="name">
+                Name
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
-            <SelectItem value="desc">
-              DESC
-            </SelectItem>
-          </SelectContent>
-        </Select>
+          <Button
+            variant="outline"
+            onClick={() => {
+              const params =
+                new URLSearchParams(
+                  searchParams,
+                );
+
+              params.set(
+                "order",
+                order ===
+                  "asc"
+                  ? "desc"
+                  : "asc",
+              );
+
+              setSearchParams(
+                params,
+              );
+            }}
+          >
+            {order ===
+            "asc"
+              ? "ASC"
+              : "DESC"}
+          </Button>
+
+          <CreateProductDialog />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {productsQuery.data.items.map(
-          (product) => (
+        {data?.items.map(
+          (
+            product,
+          ) => (
             <Card
-              key={product.id}
+              key={
+                product.id
+              }
             >
               <CardHeader>
-                <CardTitle className="flex items-center justify-between gap-2 text-lg">
+                <CardTitle className="flex items-start justify-between gap-3">
                   <span>
                     {
                       product.name
                     }
                   </span>
 
-                  <ProductPrice
-                    productId={
-                      product.id
-                    }
-                    priceRub={
-                      product.price_rub
-                    }
-                  />
+                  <div className="flex items-center gap-2">
+                    {canEditProduct(
+                      user,
+                      product,
+                    ) && (
+                      <EditProductDialog
+                        product={
+                          product
+                        }
+                      />
+                    )}
+
+                    {canDeleteProduct(
+                      user,
+                    ) && (
+                      <DeleteProductDialog
+                        productId={
+                          product.id
+                        }
+                      />
+                    )}
+                  </div>
                 </CardTitle>
               </CardHeader>
 
-              <CardContent className="space-y-3">
-                <p className="text-sm text-slate-600">
+              <CardContent className="space-y-3 text-sm">
+                <div>
                   {
                     product.description
                   }
-                </p>
+                </div>
 
-                <div className="text-sm">
-                  <span className="font-medium">
-                    Category:
-                  </span>{" "}
+                <div className="font-medium">
+                  Category:{" "}
                   {
                     product
                       .category
@@ -316,72 +262,87 @@ export const ProductsPage = () => {
                   }
                 </div>
 
-                {product.common_note && (
-                  <div className="rounded bg-slate-100 p-2 text-sm text-slate-700">
+                <div className="flex items-center gap-1 font-semibold">
+                  <span>
+                    {
+                      product.price_rub
+                    }{" "}
+                    BYN
+                  </span>
+
+                  <span
+                    className="cursor-pointer text-slate-500"
+                    onMouseEnter={() =>
+                      setHoveredProductId(
+                        product.id,
+                      )
+                    }
+                    onMouseLeave={() =>
+                      setHoveredProductId(
+                        null,
+                      )
+                    }
+                  >
+                    *
+                  </span>
+                </div>
+
+                {hoveredProductId ===
+                  product.id &&
+                  usdPrice && (
+                    <div className="rounded-md border bg-slate-50 p-2 text-xs">
+                      <div>
+                        USD
+                        rate:{" "}
+                        {
+                          usdPrice.usd_rate
+                        }
+                      </div>
+
+                      <div>
+                        USD
+                        price:{" "}
+                        {
+                          usdPrice.price_usd
+                        }{" "}
+                        $
+                      </div>
+                    </div>
+                  )}
+
+                <div className="rounded-md bg-slate-100 p-2">
+                  <div className="text-xs text-slate-500">
+                    Common
+                    note
+                  </div>
+
+                  <div>
                     {
                       product.common_note
                     }
                   </div>
-                )}
+                </div>
 
-                {canSeeSpecialNote(
-                  user,
-                ) &&
+                {user?.role ===
+                  "moderator" &&
                   product.special_note && (
-                    <div className="rounded bg-amber-100 p-2 text-sm text-amber-800">
-                      {
-                        product.special_note
-                      }
+                    <div className="rounded-md bg-red-50 p-2">
+                      <div className="text-xs text-red-500">
+                        Special
+                        note
+                      </div>
+
+                      <div>
+                        {
+                          product.special_note
+                        }
+                      </div>
                     </div>
                   )}
               </CardContent>
             </Card>
           ),
         )}
-      </div>
-
-      <div className="flex items-center justify-center gap-4">
-        <Button
-          variant="outline"
-          disabled={page === 1}
-          onClick={() =>
-            updateParam(
-              "page",
-              String(
-                page - 1,
-              ),
-            )
-          }
-        >
-          Previous
-        </Button>
-
-        <div className="text-sm font-medium">
-          Page {page} of{" "}
-          {
-            productsQuery.data
-              .pages
-          }
-        </div>
-
-        <Button
-          variant="outline"
-          disabled={
-            page >=
-            productsQuery.data
-              .pages
-          }
-          onClick={() =>
-            updateParam(
-              "page",
-              String(
-                page + 1,
-              ),
-            )
-          }
-        >
-          Next
-        </Button>
       </div>
     </div>
   );

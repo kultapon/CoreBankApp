@@ -3,8 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getUsdPriceRequest } from "../api/products.api";
 
 export const useUsdPrice = (
-  productId: number,
-  enabled: boolean,
+  productId: number | null,
 ) => {
   return useQuery({
     queryKey: [
@@ -14,11 +13,10 @@ export const useUsdPrice = (
 
     queryFn: () =>
       getUsdPriceRequest(
-        productId,
+        productId!,
       ),
 
-    enabled,
-
-    staleTime: 1000 * 60 * 5,
+    enabled:
+      productId !== null,
   });
 };
